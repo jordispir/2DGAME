@@ -1,4 +1,5 @@
 import pygame
+import random
 import time
 
 xWindow, yWindow = 600, 400
@@ -130,6 +131,60 @@ class Projectile:
 
         self.x += self.velocity
         self.draw()
+            
+class Enemy:
+    def __init__(self):
+        self.width, self.height = 64, 64
+        self.starterX, self.starterY = xWindow - self.width, yWindow - self.height
+        self.x, self.y = self.starterX, self.starterY 
+        self.walkCount = 0
+        self.walkLeft = [pygame.image.load("enemy/L1E.png"), pygame.image.load("enemy/L2E.png"), pygame.image.load("enemy/L3E.png"), pygame.image.load("enemy/L4E.png"), pygame.image.load("enemy/L5E.png"), pygame.image.load("enemy/L6E.png"), pygame.image.load("enemy/L7E.png"), pygame.image.load("enemy/L8E.png"), pygame.image.load("enemy/L9E.png"), pygame.image.load("enemy/L10E.png"), pygame.image.load("enemy/L11E.png")]
+        self.walkRight = [pygame.image.load("enemy/R1E.png"), pygame.image.load("enemy/R2E.png"), pygame.image.load("enemy/R3E.png"), pygame.image.load("enemy/R4E.png"), pygame.image.load("enemy/R5E.png"), pygame.image.load("enemy/R6E.png"), pygame.image.load("enemy/R7E.png"), pygame.image.load("enemy/R8E.png"), pygame.image.load("enemy/R9E.png"), pygame.image.load("enemy/R10E.png"), pygame.image.load("enemy/R11E.png")]
+        self.mueveIzquierda, self.mueveDerecha = -4 , 4 
+        self.incremento = self.mueveIzquierda 
+        self.left = False
+        self.right = False
+
+    def enemyMovement(self, player):
+        if player.startMovement:
+
+            if self.incremento == self.mueveDerecha:
+                self.right = True
+                self.left = False
+
+                if self.x != (xWindow - self.width):
+                    self.x += self.incremento
+
+                else:
+                    self.incremento = self.mueveIzquierda
+
+            else:
+                self.left = True
+                self.right = False
+
+                if self.x != 0:
+                    self.x += self.incremento 
+                
+                else:
+                    self.incremento = self.mueveDerecha
+
+
+        #print (self.left, self.right)
+
+    def draw(self, player):
+        if player.startMovement:
+            if self.walkCount + 1 >= 27:
+                self.walkCount = 0
+
+            if self.left:
+                window.blit(self.walkLeft[self.walkCount//3], (self.x, self.y))
+                self.walkCount += 1
+            elif self.right:
+                window.blit(self.walkRight[self.walkCount//3], (self.x, self.y))
+                self.walkCount += 1
+        
+        else:
+            window.blit(self.walkLeft[0], (self.x, self.y))
 
 
     #Solo se queda con 400 en la Y. OK -> La altura y anchura del personaje es de 64 x 64, se debe convertir con pygame.transform.scale

@@ -6,15 +6,17 @@ pygame.init()
 
 window = sprite.Window() 
 player = sprite.Player()
-enemy = sprite.Enemy()
+enemySurface = sprite.EnemySurface()
+enemy = sprite.Enemy(enemySurface)
 
 
 while not window.endFrameWork():
     window.startFrameWork()
     player.playerMovement()
     player.draw()
-    enemy.enemyMovement(player)
+    enemy.enemyMovement(player, enemySurface)
     enemy.draw(player)
+    enemySurface.draw()
     window.updateFrameWork()
 
 

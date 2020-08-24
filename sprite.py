@@ -2,10 +2,9 @@ import pygame
 import random
 import time
 
-xWindow, yWindow = 600, 400
+xWindow, yWindow = 1280, 720 
 window = pygame.display.set_mode((xWindow, yWindow)) #WINDOW MUST GO OUT!
 
-bg = pygame.image.load('background/bg.jpg')
 bullets = []
 
 class Window:
@@ -14,7 +13,6 @@ class Window:
 
     def startFrameWork(self):
         window.fill(pygame.Color("gray"))
-        window.blit(bg, (0, 0))
 
     def updateFrameWork(self):
         pygame.display.flip()
@@ -34,6 +32,7 @@ class Player:
         self.window = Window()
         self.x, self.y = 0, 0 
         self.width, self.height = 64, 64
+        self.dropVelocity = 8
         self.velocidad = 6
         self.jumpCount = 10
         self.walkCount = 0
@@ -49,11 +48,11 @@ class Player:
     def playerMovement(self):
         key = pygame.key.get_pressed()
 
-        if self.y == yWindow - self.height:  #can't move until touching the ground
+        if self.y == (yWindow - self.height):  #can't move until touching the ground / -2 (yWindow- self.height never will be = )
             self.startMovement = True
 
         elif self.startMovement == False:
-            self.y += self.velocidad   
+            self.y += self.dropVelocity
             self.right = True
 
         if key[pygame.K_SPACE] and self.startMovement: 
@@ -89,6 +88,10 @@ class Player:
             else: # This will execute if our jump is finished
                 self.jumpCount = 10
                 self.Jump = False
+
+
+        #print (self.walkRight[0].get_size())
+        print (self.y)
 
     def draw(self):
         
@@ -133,9 +136,9 @@ class Projectile:
         self.draw()
             
 class Enemy:
-    def __init__(self):
+    def __init__(self, enemySurface):
         self.width, self.height = 64, 64
-        self.starterX, self.starterY = xWindow - self.width, yWindow - self.height
+        self.starterX, self.starterY = enemySurface.x, enemySurface.y - self.height 
         self.x, self.y = self.starterX, self.starterY 
         self.walkCount = 0
         self.walkLeft = [pygame.image.load("enemy/L1E.png"), pygame.image.load("enemy/L2E.png"), pygame.image.load("enemy/L3E.png"), pygame.image.load("enemy/L4E.png"), pygame.image.load("enemy/L5E.png"), pygame.image.load("enemy/L6E.png"), pygame.image.load("enemy/L7E.png"), pygame.image.load("enemy/L8E.png"), pygame.image.load("enemy/L9E.png"), pygame.image.load("enemy/L10E.png"), pygame.image.load("enemy/L11E.png")]
@@ -145,7 +148,7 @@ class Enemy:
         self.left = False
         self.right = False
 
-    def enemyMovement(self, player):
+    def enemyMovement(self, player, enemySurface):
         if player.startMovement:
 
             if self.incremento == self.mueveDerecha:
@@ -164,6 +167,9 @@ class Enemy:
 
                 if self.x != 0:
                     self.x += self.incremento 
+                    if self.x < (enemySurface.x - enemySurface.width) + self.width: #Out of the surface
+                        self.y += 5
+                    
                 
                 else:
                     self.incremento = self.mueveDerecha
@@ -186,6 +192,18 @@ class Enemy:
         else:
             window.blit(self.walkLeft[0], (self.x, self.y))
 
+class EnemySurface:
+    def __init__(self):
+        self.x = 1200
+        self.y = 100
+        self.width = 100
+        self.height = 5
+        self.color = (0, 0, 0)
+    
+    def draw(self):
+        pygame.draw.rect(window, self.color, (self.x, self.y, self.width, self.height))
 
     #Solo se queda con 400 en la Y. OK -> La altura y anchura del personaje es de 64 x 64, se debe convertir con pygame.transform.scale
     #get_size() -> image.get_size() -> print variable
+
+    #TODO Make a phisics motor for Enemy.

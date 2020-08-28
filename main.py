@@ -14,6 +14,7 @@ while not window.endFrameWork():
     window.startFrameWork()
     player.playerMovement()
     player.draw()
+    enemy.enemyDrop(player, enemySurface)
     enemy.enemyMovement(player, enemySurface)
     enemy.draw(player)
     enemySurface.draw()

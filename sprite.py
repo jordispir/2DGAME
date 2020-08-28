@@ -143,37 +143,40 @@ class Enemy:
         self.walkCount = 0
         self.walkLeft = [pygame.image.load("enemy/L1E.png"), pygame.image.load("enemy/L2E.png"), pygame.image.load("enemy/L3E.png"), pygame.image.load("enemy/L4E.png"), pygame.image.load("enemy/L5E.png"), pygame.image.load("enemy/L6E.png"), pygame.image.load("enemy/L7E.png"), pygame.image.load("enemy/L8E.png"), pygame.image.load("enemy/L9E.png"), pygame.image.load("enemy/L10E.png"), pygame.image.load("enemy/L11E.png")]
         self.walkRight = [pygame.image.load("enemy/R1E.png"), pygame.image.load("enemy/R2E.png"), pygame.image.load("enemy/R3E.png"), pygame.image.load("enemy/R4E.png"), pygame.image.load("enemy/R5E.png"), pygame.image.load("enemy/R6E.png"), pygame.image.load("enemy/R7E.png"), pygame.image.load("enemy/R8E.png"), pygame.image.load("enemy/R9E.png"), pygame.image.load("enemy/R10E.png"), pygame.image.load("enemy/R11E.png")]
-        self.mueveIzquierda, self.mueveDerecha = -4 , 4 
+        self.mueveIzquierda, self.mueveDerecha = -12, 12
         self.incremento = self.mueveIzquierda 
         self.dropVelocity = 8
         self.left = False
         self.right = False
         self.startMovementEnemy = False
+        self.endMovement = False
 
-    def enemyMovement(self, player, enemySurface):
-        if self.x < (enemySurface.x - enemySurface.width) + self.width - 10: #Out of the surface
-            if self.y == (yWindow - self.height): #TODO Encontrar optimitzación para el error.
+    def enemyDrop(self, player, enemySurface):
+        if self.x < (enemySurface.x - enemySurface.width + self.width) - 20: #Out of the surface
+            if self.y >= (yWindow - self.height): 
                 self.startMovementEnemy = True
+                self.endMovement = True
 
             elif self.startMovementEnemy == False:
                 self.left = False
                 self.y += self.dropVelocity 
 
         else:
-            if player.startMovement:
-                self.left = True
+            if player.startMovement and not (self.endMovement): #mientras endMovement siga siendo False el enemigo se moverá hacia la izquierda, cuando endMovement sea True no se sumará el mueveIzquierda y tampoco impedirá avanzar en el enemyMovement.
+                self.left = True 
                 self.x += self.mueveIzquierda
 
         #print (self.startMovementEnemy)
         #print (self.y)
         #time.sleep(0.1)
 
+    def enemyMovement(self, player, enemySurface):
         if self.startMovementEnemy and player.startMovement:
             if self.incremento == self.mueveDerecha:
                 self.right = True
                 self.left = False
 
-                if self.x != (xWindow - self.width):
+                if self.x < (xWindow - self.width):
                     self.x += self.incremento
 
                 else:
@@ -183,16 +186,17 @@ class Enemy:
                 self.left = True
                 self.right = False
 
-                if self.x != 0:
+                if self.x >= 0:
                     self.x += self.incremento #TODO Player does not touch the xWindow. 
                     
                 
                 else:
                     self.incremento = self.mueveDerecha
 
-        print (self.x)
-        print ("xWindow - self.width = " + str(xWindow- self.width))
+        #print (self.x)
+        #print ("xWindow - self.width = " + str(xWindow- self.width))
         #print (self.left, self.right)
+        #print (self.mueveIzquierda, self.mueveDerecha)
 
     def draw(self, player):
         if player.startMovement:
@@ -222,7 +226,7 @@ class EnemySurface:
         pygame.draw.rect(window, self.color, (self.x, self.y, self.width, self.height))
         pygame.draw.rect(window, self.color, (self.x2, self.y2, self.width, self.height))
 
-    #Solo se queda con 400 en la Y. OK -> La altura y anchura del personaje es de 64 x 64, se debe convertir con pygame.transform.scale
-    #get_size() -> image.get_size() -> print variable
-
     #TODO Make a phisics motor for Enemy. OK 50%
+    #TODO Encontrar optimitzación para el error. (línea 156) | con  >=   OK! (se pasará por un mínimo)
+    #get_size() -> image.get_size() -> print variable
+    #Solo se queda con 400 en la Y. OK -> La altura y anchura del personaje es de 64 x 64, se debe convertir con pygame.transform.scale

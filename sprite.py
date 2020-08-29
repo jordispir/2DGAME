@@ -138,43 +138,72 @@ class Projectile:
 class Enemy:
     def __init__(self, enemySurface):
         self.width, self.height = 64, 64
-        self.starterX, self.starterY = enemySurface.x + 100, enemySurface.y - self.height 
-        self.x, self.y = self.starterX, self.starterY 
+        self.starterX = random.choice((enemySurface.DerechaX, enemySurface.IzquierdaX)) 
+        self.mueveIzquierda, self.mueveDerecha = -4, 4 
+
+        #Depende del random.choice starterX será en la izquierda o derecha y también cambiará el incremento y la Y.
+        if self.starterX == enemySurface.DerechaX:
+            self.starterX = enemySurface.DerechaX + 100
+            self.starterY = enemySurface.DerechaY - self.height
+            self.incremento = self.mueveIzquierda 
+
+        elif self.starterX == enemySurface.IzquierdaX: 
+            self.starterX = enemySurface.IzquierdaX - 100
+            self.starterY = enemySurface.IzquierdaY - self.height
+            self.incremento = self.mueveDerecha
+
+        self.x, self.y = self.starterX, self.starterY
+
         self.walkCount = 0
         self.walkLeft = [pygame.image.load("enemy/L1E.png"), pygame.image.load("enemy/L2E.png"), pygame.image.load("enemy/L3E.png"), pygame.image.load("enemy/L4E.png"), pygame.image.load("enemy/L5E.png"), pygame.image.load("enemy/L6E.png"), pygame.image.load("enemy/L7E.png"), pygame.image.load("enemy/L8E.png"), pygame.image.load("enemy/L9E.png"), pygame.image.load("enemy/L10E.png"), pygame.image.load("enemy/L11E.png")]
         self.walkRight = [pygame.image.load("enemy/R1E.png"), pygame.image.load("enemy/R2E.png"), pygame.image.load("enemy/R3E.png"), pygame.image.load("enemy/R4E.png"), pygame.image.load("enemy/R5E.png"), pygame.image.load("enemy/R6E.png"), pygame.image.load("enemy/R7E.png"), pygame.image.load("enemy/R8E.png"), pygame.image.load("enemy/R9E.png"), pygame.image.load("enemy/R10E.png"), pygame.image.load("enemy/R11E.png")]
-        self.mueveIzquierda, self.mueveDerecha = -12, 12
-        self.incremento = self.mueveIzquierda 
         self.dropVelocity = 8
         self.left = False
         self.right = False
         self.startMovementEnemy = False
         self.endMovement = False
+        
+        #print (self.starterX, self.starterY)
 
     def enemyDrop(self, player, enemySurface):
-        if self.x < (enemySurface.x - enemySurface.width + self.width) - 20: #Out of the surface
-            if self.y >= (yWindow - self.height): 
-                self.startMovementEnemy = True
-                self.endMovement = True
+        if self.starterX == enemySurface.DerechaX + 100:
+            if self.x < (enemySurface.DerechaX - enemySurface.width + self.width) - 20: #Out of the surface
+                if self.y >= (yWindow - self.height): 
+                    self.startMovementEnemy = True
+                    self.endMovement = True
 
-            elif self.startMovementEnemy == False:
-                self.left = False
-                self.y += self.dropVelocity 
+                elif self.startMovementEnemy == False:
+                    self.left = False
+                    self.y += self.dropVelocity 
 
-        else:
-            if player.startMovement and not (self.endMovement): #mientras endMovement siga siendo False el enemigo se moverá hacia la izquierda, cuando endMovement sea True no se sumará el mueveIzquierda y tampoco impedirá avanzar en el enemyMovement.
-                self.left = True 
-                self.x += self.mueveIzquierda
+            else:
+                if player.startMovement and not (self.endMovement): #mientras endMovement siga siendo False el enemigo se moverá hacia la izquierda, 
+                    self.left = True                                #cuando endMovement sea True no se sumará el mueveIzquierda y tampoco impedirá avanzar en el enemyMovement.
+                    self.x += self.mueveIzquierda   
+        
+        elif self.starterX == enemySurface.IzquierdaX - 100:
+            if self.x > (enemySurface.IzquierdaX + enemySurface.width - self.width) + 40: 
+                if self.y >= (yWindow - self.height): 
+                    self.startMovementEnemy = True
+                    self.endMovement = True
+
+                elif self.startMovementEnemy == False:
+                    self.right = False
+                    self.y += self.dropVelocity 
+
+            else:
+                if player.startMovement and not (self.endMovement): 
+                    self.right = True                         
+                    self.x += self.mueveDerecha
 
         #print (self.startMovementEnemy)
-        #print (self.y)
+        print (self.x, self.y)
         #time.sleep(0.1)
 
     def enemyMovement(self, player, enemySurface):
         if self.startMovementEnemy and player.startMovement:
             if self.incremento == self.mueveDerecha:
-                self.right = True
-                self.left = False
+                self.right, self.left = True, False
 
                 if self.x < (xWindow - self.width):
                     self.x += self.incremento
@@ -183,12 +212,10 @@ class Enemy:
                     self.incremento = self.mueveIzquierda
 
             else:
-                self.left = True
-                self.right = False
+                self.right, self.left = False, True
 
                 if self.x >= 0:
                     self.x += self.incremento #TODO Player does not touch the xWindow. 
-                    
                 
                 else:
                     self.incremento = self.mueveDerecha
@@ -198,7 +225,7 @@ class Enemy:
         #print (self.left, self.right)
         #print (self.mueveIzquierda, self.mueveDerecha)
 
-    def draw(self, player):
+    def draw(self, player, enemySurface):
         if player.startMovement:
             if self.walkCount + 1 >= 27:
                 self.walkCount = 0
@@ -209,24 +236,28 @@ class Enemy:
             elif self.right:
                 window.blit(self.walkRight[self.walkCount//3], (self.x, self.y))
                 self.walkCount += 1
-            else:
+            elif self.starterX == enemySurface.DerechaX + 100:
                 window.blit(self.walkLeft[0], (self.x, self.y))
+            elif self.starterX == enemySurface.IzquierdaX - 100:
+                window.blit(self.walkRight[6], (self.x, self.y))
         
         else:
             window.blit(self.walkLeft[0], (self.x, self.y))
 
 class EnemySurface:
     def __init__(self):
-        self.x, self.y = xWindow - 100, 200
-        self.x2, self.y2 = 0, random.randrange(100, 700)
+        self.DerechaX, self.DerechaY = xWindow - 100, random.randrange(100, 500)
+        self.IzquierdaX, self.IzquierdaY = 0, random.randrange(100, 500)
         self.width, self.height = 100, 5
         self.color = (0, 0, 0)
     
     def draw(self):
-        pygame.draw.rect(window, self.color, (self.x, self.y, self.width, self.height))
-        pygame.draw.rect(window, self.color, (self.x2, self.y2, self.width, self.height))
+        pygame.draw.rect(window, self.color, (self.DerechaX, self.DerechaY, self.width, self.height))
+        pygame.draw.rect(window, self.color, (self.IzquierdaX, self.IzquierdaY, self.width, self.height))
 
     #TODO Make a phisics motor for Enemy. OK 50%
     #TODO Encontrar optimitzación para el error. (línea 156) | con  >=   OK! (se pasará por un mínimo)
+    #TODO Crear varios personajes que aparezcan en diferentes posiciones.
+
     #get_size() -> image.get_size() -> print variable
     #Solo se queda con 400 en la Y. OK -> La altura y anchura del personaje es de 64 x 64, se debe convertir con pygame.transform.scale

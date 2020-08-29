@@ -16,7 +16,7 @@ while not window.endFrameWork():
     player.draw()
     enemy.enemyDrop(player, enemySurface)
     enemy.enemyMovement(player, enemySurface)
-    enemy.draw(player, enemySurface)
+    enemy.drawMovement(player, enemySurface)
     enemySurface.draw()
     window.updateFrameWork()
 

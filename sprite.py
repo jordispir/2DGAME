@@ -175,6 +175,7 @@ class Enemy:
                 elif self.startMovementEnemy == False:
                     self.left = False
                     self.y += self.dropVelocity 
+                    self.drawPlayerFalling(enemySurface)
 
             else:
                 if player.startMovement and not (self.endMovement): #mientras endMovement siga siendo False el enemigo se moverá hacia la izquierda, 
@@ -190,6 +191,7 @@ class Enemy:
                 elif self.startMovementEnemy == False:
                     self.right = False
                     self.y += self.dropVelocity 
+                    self.drawPlayerFalling(enemySurface)
 
             else:
                 if player.startMovement and not (self.endMovement): 
@@ -225,7 +227,13 @@ class Enemy:
         #print (self.left, self.right)
         #print (self.mueveIzquierda, self.mueveDerecha)
 
-    def draw(self, player, enemySurface):
+    def drawPlayerFalling(self, enemySurface):
+            if self.starterX == enemySurface.DerechaX + 100:
+                window.blit(self.walkLeft[0], (self.x, self.y))
+            elif self.starterX == enemySurface.IzquierdaX - 100:
+                window.blit(self.walkRight[6], (self.x, self.y))
+
+    def drawMovement(self, player, enemySurface):
         if player.startMovement:
             if self.walkCount + 1 >= 27:
                 self.walkCount = 0
@@ -236,13 +244,10 @@ class Enemy:
             elif self.right:
                 window.blit(self.walkRight[self.walkCount//3], (self.x, self.y))
                 self.walkCount += 1
-            elif self.starterX == enemySurface.DerechaX + 100:
-                window.blit(self.walkLeft[0], (self.x, self.y))
-            elif self.starterX == enemySurface.IzquierdaX - 100:
-                window.blit(self.walkRight[6], (self.x, self.y))
-        
         else:
             window.blit(self.walkLeft[0], (self.x, self.y))
+            
+        
 
 class EnemySurface:
     def __init__(self):
@@ -257,7 +262,7 @@ class EnemySurface:
 
     #TODO Make a phisics motor for Enemy. OK 50%
     #TODO Encontrar optimitzación para el error. (línea 156) | con  >=   OK! (se pasará por un mínimo)
-    #TODO Crear varios personajes que aparezcan en diferentes posiciones.
+    #TODO Crear varios personajes que aparezcan en diferentes posiciones. 50%
 
     #get_size() -> image.get_size() -> print variable
     #Solo se queda con 400 en la Y. OK -> La altura y anchura del personaje es de 64 x 64, se debe convertir con pygame.transform.scale

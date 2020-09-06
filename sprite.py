@@ -161,7 +161,6 @@ class Enemy:
         #print (self.starterX, self.starterY)
 
     def enemyDrop(self, player, enemySurface):
-        #time.sleep(0.05)
         #print ("self.y + 32 = " + str(self.y + 32))
 
         if self.starterX == enemySurface.DerechaX + 100:
@@ -229,16 +228,10 @@ class Enemy:
                     self.x2 += self.mueveDerecha
 
                 
-        #print (self.startMovementEnemy)
-<<<<<<< HEAD
-            #print (self.x, self.y)
         #time.sleep(0.1)
-=======
         #print (self.x, self.y)
-        #time.sleep(0.05)
         #print ("self.left = " + str(self.left), "self.right = " + str(self.right))
         #print ("self.left2 = " + str(self.left2), "self.right2 = " + str(self.right2))
->>>>>>> 71bdd6fa4a44bfeeb76ddbb2fdaa85d5108b501e
 
     def enemyMovement(self, player, enemySurface):
         if self.startMovementE1 and player.startMovement:
@@ -306,12 +299,6 @@ class Enemy:
                 self.walkCountE1 += 1
 
             elif self.right:
-<<<<<<< HEAD
-                window.blit(self.walkRight[self.walkCount//3], (self.x, self.y))
-                self.walkCount += 1
-        else:
-            window.blit(self.walkLeft[0], (self.x, self.y))
-=======
                 window.blit(self.walkRight[self.walkCountE1//3], (self.x, self.y))
                 self.walkCountE1 += 1
 
@@ -322,8 +309,9 @@ class Enemy:
             elif self.right2:
                 window.blit(self.walkRight[self.walkCountE2//3], (self.x2, self.y2))
                 self.walkCountE2 += 1
+        else:
+            window.blit(self.walkLeft[0], (self.x, self.y))
 
->>>>>>> 71bdd6fa4a44bfeeb76ddbb2fdaa85d5108b501e
         
 
 class EnemySurface:

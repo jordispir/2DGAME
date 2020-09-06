@@ -1,16 +1,36 @@
 import pygame
-import ctypes
+pygame.init()
 
-user32 = ctypes.windll.user32
-user32.SetProcessDPIAware()
+global window, xWindow, yWindow, xWindowMaximized, yWindowMaximized, fullscreen
 
-xWindow, yWindow = 1200, 720
-xWindowMaximized, yWindowMaximized = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+monitorSize = pygame.display.Info()
 
 xWindow, yWindow = 1200, 720
+
+xWindowMaximized, yWindowMaximized = monitorSize.current_w, monitorSize.current_h
+
+
 window = pygame.display.set_mode((xWindow, yWindow), pygame.RESIZABLE)
+fullscreen = False
 
+def updateWindow():
+    global window, xWindow, yWindow, xWindowMaximized, yWindowMaximized, fullscreen
 
+    key = pygame.key.get_pressed()
+    event = pygame.event.poll()
+
+    if event.type == pygame.VIDEORESIZE:
+        if not fullscreen:
+            window = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+        
+    if key[pygame.K_f]: 
+        fullscreen = not fullscreen
+        if fullscreen:
+            window = pygame.display.set_mode((xWindowMaximized, yWindowMaximized), pygame.FULLSCREEN)
+            xWindow, yWindow = xWindowMaximized, yWindowMaximized
+        else:
+            window = pygame.display.set_mode((xWindow, yWindow), pygame.RESIZABLE)
+        
 class Window:
     def __init__(self):
         self.time = pygame.time.Clock()
@@ -22,13 +42,7 @@ class Window:
         pygame.display.flip()
         self.time.tick(27)
 
-    def updateWindow(self):
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_h:
-                    window = pygame.display.set_mode((xWindowMaximized, yWindowMaximized))
-                    print ("a")
-
+                
 
     def endFrameWork(self):
         out = False

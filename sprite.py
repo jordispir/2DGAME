@@ -1,35 +1,16 @@
 import pygame
+import windowManager
 import random
 import time
 
-xWindow, yWindow = 1280, 720 
-window = pygame.display.set_mode((xWindow, yWindow)) #WINDOW MUST GO OUT!
+window = windowManager.window
+xWindow, yWindow = windowManager.xWindow, windowManager.yWindow
 
 bullets = []
 
-class Window:
-    def __init__(self):
-        self.time = pygame.time.Clock()
-
-    def startFrameWork(self):
-        window.fill(pygame.Color("gray"))
-
-    def updateFrameWork(self):
-        pygame.display.flip()
-        self.time.tick(27)
-
-    def endFrameWork(self):
-        out = False
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                out = True
-            return out
-            
-    
-
 class Player:
     def __init__(self): 
-        self.window = Window()
+        self.window = window
         self.width, self.height = 64, 64
         self.x, self.y = (xWindow/2 - self.width/2), 0 
         self.dropVelocity = 8
@@ -114,7 +95,7 @@ class Player:
 
 class Projectile:
     def __init__(self, x, y, color, size, velocity):
-        self.window = Window()
+        self.window = window
         self.x = x
         self.y = y
         self.xInicial = self.x
@@ -145,23 +126,35 @@ class Enemy:
         if self.starterX == enemySurface.DerechaX:
             self.starterX = enemySurface.DerechaX + 100
             self.starterY = enemySurface.DerechaY - self.height
-            self.incremento = self.mueveIzquierda 
+
+            self.starterX2 = enemySurface.IzquierdaX - 100
+            self.starterY2 = enemySurface.IzquierdaY - self.height
+
+            self.incrementoE1 = self.mueveIzquierda 
+            self.incrementoE2 = self.mueveDerecha
 
         elif self.starterX == enemySurface.IzquierdaX: 
             self.starterX = enemySurface.IzquierdaX - 100
             self.starterY = enemySurface.IzquierdaY - self.height
-            self.incremento = self.mueveDerecha
+
+            self.starterX2 = enemySurface.DerechaX + 100
+            self.starterY2 = enemySurface.DerechaY - self.height
+
+            self.incrementoE1 = self.mueveDerecha
+            self.incrementoE2 = self.mueveIzquierda
 
         self.x, self.y = self.starterX, self.starterY
+        self.x2, self.y2 = self.starterX2, self.starterY2
 
-        self.walkCount = 0
+        self.walkCountE1 = 0
+        self.walkCountE2 = 0
         self.walkLeft = [pygame.image.load("enemy/L1E.png"), pygame.image.load("enemy/L2E.png"), pygame.image.load("enemy/L3E.png"), pygame.image.load("enemy/L4E.png"), pygame.image.load("enemy/L5E.png"), pygame.image.load("enemy/L6E.png"), pygame.image.load("enemy/L7E.png"), pygame.image.load("enemy/L8E.png"), pygame.image.load("enemy/L9E.png"), pygame.image.load("enemy/L10E.png"), pygame.image.load("enemy/L11E.png")]
         self.walkRight = [pygame.image.load("enemy/R1E.png"), pygame.image.load("enemy/R2E.png"), pygame.image.load("enemy/R3E.png"), pygame.image.load("enemy/R4E.png"), pygame.image.load("enemy/R5E.png"), pygame.image.load("enemy/R6E.png"), pygame.image.load("enemy/R7E.png"), pygame.image.load("enemy/R8E.png"), pygame.image.load("enemy/R9E.png"), pygame.image.load("enemy/R10E.png"), pygame.image.load("enemy/R11E.png")]
         self.dropVelocity = 8
-        self.left = False
-        self.right = False
-        self.startMovementEnemy = False
-        self.endMovement = False
+        self.left, self.right = False, False
+        self.left2, self.right2 = False, False
+        self.startMovementE1, self.startMovementE2 = False, False
+        self.endMovementE1, self.endMovementE2 = False, False
         
         #print (self.starterX, self.starterY)
 
@@ -169,84 +162,151 @@ class Enemy:
         if self.starterX == enemySurface.DerechaX + 100:
             if self.x < (enemySurface.DerechaX - enemySurface.width + self.width) - 20: #Out of the surface
                 if self.y >= (yWindow - self.height): 
-                    self.startMovementEnemy = True
-                    self.endMovement = True
+                    self.startMovementE1 = True
+                    self.endMovementE1 = True
 
-                elif self.startMovementEnemy == False:
+                elif self.startMovementE1 == False:
                     self.left = False
                     self.y += self.dropVelocity 
                     self.drawPlayerFalling(enemySurface)
 
             else:
-                if player.startMovement and not (self.endMovement): #mientras endMovement siga siendo False el enemigo se moverá hacia la izquierda, 
+                if player.startMovement and not (self.endMovementE1): #mientras endMovement siga siendo False el enemigo se moverá hacia la izquierda, 
                     self.left = True                                #cuando endMovement sea True no se sumará el mueveIzquierda y tampoco impedirá avanzar en el enemyMovement.
                     self.x += self.mueveIzquierda   
         
         elif self.starterX == enemySurface.IzquierdaX - 100:
             if self.x > (enemySurface.IzquierdaX + enemySurface.width - self.width) + 40: 
                 if self.y >= (yWindow - self.height): 
-                    self.startMovementEnemy = True
-                    self.endMovement = True
+                    self.startMovementE1 = True
+                    self.endMovementE1 = True
 
-                elif self.startMovementEnemy == False:
+                elif self.startMovementE1 == False:
                     self.right = False
                     self.y += self.dropVelocity 
                     self.drawPlayerFalling(enemySurface)
 
             else:
-                if player.startMovement and not (self.endMovement): 
+                if player.startMovement and not (self.endMovementE1): 
                     self.right = True                         
                     self.x += self.mueveDerecha
 
+        if self.starterX2 == enemySurface.DerechaX + 100:
+            if self.x2 < (enemySurface.DerechaX - enemySurface.width + self.width) - 20: 
+                if self.y2 >= (yWindow - self.height): 
+                    self.startMovementE2 = True
+                    self.endMovementE2 = True
+
+                elif self.startMovementE2 == False:
+                    self.left2 = False
+                    self.y2 += self.dropVelocity 
+                    self.drawPlayerFalling(enemySurface)
+
+            else:
+                if player.startMovement and not (self.endMovementE2): 
+                    self.left2 = True
+                    self.x2 += self.mueveIzquierda   
+        
+        elif self.starterX2 == enemySurface.IzquierdaX - 100:
+            if self.x2 > (enemySurface.IzquierdaX + enemySurface.width - self.width) + 40: 
+                if self.y2 >= (yWindow - self.height):
+                    self.startMovementE2 = True
+                    self.endMovementE2 = True
+
+                elif self.startMovementE2 == False:
+                    self.right2 = False
+                    self.y2 += self.dropVelocity 
+                    self.drawPlayerFalling(enemySurface)
+
+            else:
+                if player.startMovement and not (self.endMovementE2): 
+                    self.right2 = True                         
+                    self.x2 += self.mueveDerecha
+
+                
         #print (self.startMovementEnemy)
-        print (self.x, self.y)
-        #time.sleep(0.1)
+        #print (self.x, self.y)
+        #time.sleep(0.05)
+        #print ("self.left = " + str(self.left), "self.right = " + str(self.right))
+        #print ("self.left2 = " + str(self.left2), "self.right2 = " + str(self.right2))
 
     def enemyMovement(self, player, enemySurface):
-        if self.startMovementEnemy and player.startMovement:
-            if self.incremento == self.mueveDerecha:
+        if self.startMovementE1 and player.startMovement:
+            if self.incrementoE1 == self.mueveDerecha:
                 self.right, self.left = True, False
 
                 if self.x < (xWindow - self.width):
-                    self.x += self.incremento
+                    self.x += self.incrementoE1
 
                 else:
-                    self.incremento = self.mueveIzquierda
+                    self.incrementoE1 = self.mueveIzquierda
 
             else:
                 self.right, self.left = False, True
 
                 if self.x >= 0:
-                    self.x += self.incremento #TODO Player does not touch the xWindow. 
+                    self.x += self.incrementoE1 
                 
                 else:
-                    self.incremento = self.mueveDerecha
+                    self.incrementoE1 = self.mueveDerecha
+
+        if self.startMovementE2 and player.startMovement:
+            if self.incrementoE2 == self.mueveDerecha:
+                self.right2, self.left2 = True, False
+
+                if self.x2 < (xWindow - self.width):
+                    self.x2 += self.incrementoE2
+
+                else:
+                    self.incrementoE2 = self.mueveIzquierda
+
+            else:
+                self.right2, self.left2 = False, True
+
+                if self.x2 >= 0:
+                    self.x2 += self.incrementoE2 
+                
+                else:
+                    self.incrementoE2 = self.mueveDerecha
 
         #print (self.x)
         #print ("xWindow - self.width = " + str(xWindow- self.width))
-        #print (self.left, self.right)
         #print (self.mueveIzquierda, self.mueveDerecha)
 
     def drawPlayerFalling(self, enemySurface):
-            if self.starterX == enemySurface.DerechaX + 100:
+            if self.starterX == enemySurface.DerechaX + 100 and not(self.startMovementE1):
                 window.blit(self.walkLeft[0], (self.x, self.y))
-            elif self.starterX == enemySurface.IzquierdaX - 100:
+            elif self.starterX == enemySurface.IzquierdaX - 100 and not(self.startMovementE1):
                 window.blit(self.walkRight[6], (self.x, self.y))
+            if self.starterX2 == enemySurface.DerechaX + 100 and not(self.startMovementE2):
+                window.blit(self.walkLeft[0], (self.x2, self.y2))
+            elif self.starterX2 == enemySurface.IzquierdaX - 100 and not(self.startMovementE2):
+                window.blit(self.walkRight[6], (self.x2, self.y2))
 
     def drawMovement(self, player, enemySurface):
         if player.startMovement:
-            if self.walkCount + 1 >= 27:
-                self.walkCount = 0
+            if self.walkCountE1 + 1 >= 27:
+                self.walkCountE1 = 0
+
+            if self.walkCountE2 + 1 >= 27:
+                self.walkCountE2 = 0
 
             if self.left:
-                window.blit(self.walkLeft[self.walkCount//3], (self.x, self.y))
-                self.walkCount += 1
+                window.blit(self.walkLeft[self.walkCountE1//3], (self.x, self.y))
+                self.walkCountE1 += 1
+
             elif self.right:
-                window.blit(self.walkRight[self.walkCount//3], (self.x, self.y))
-                self.walkCount += 1
-        else:
-            window.blit(self.walkLeft[0], (self.x, self.y))
-            
+                window.blit(self.walkRight[self.walkCountE1//3], (self.x, self.y))
+                self.walkCountE1 += 1
+
+            if self.left2:
+                window.blit(self.walkLeft[self.walkCountE2//3], (self.x2, self.y2))
+                self.walkCountE2 += 1
+
+            elif self.right2:
+                window.blit(self.walkRight[self.walkCountE2//3], (self.x2, self.y2))
+                self.walkCountE2 += 1
+
         
 
 class EnemySurface:
@@ -263,6 +323,8 @@ class EnemySurface:
     #TODO Make a phisics motor for Enemy. OK 50%
     #TODO Encontrar optimitzación para el error. (línea 156) | con  >=   OK! (se pasará por un mínimo)
     #TODO Crear varios personajes que aparezcan en diferentes posiciones. 50%
+    
+    #TODO Blit de imagen superpuesto mientras en otro enemigo no toque el suelo.
 
     #get_size() -> image.get_size() -> print variable
     #Solo se queda con 400 en la Y. OK -> La altura y anchura del personaje es de 64 x 64, se debe convertir con pygame.transform.scale

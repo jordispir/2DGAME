@@ -1,10 +1,10 @@
 import pygame
 import sprite
+import windowManager
 
 pygame.init()
 
-
-window = sprite.Window() 
+window =  windowManager.Window()
 player = sprite.Player()
 enemySurface = sprite.EnemySurface()
 enemy = sprite.Enemy(enemySurface)
@@ -18,8 +18,10 @@ while not window.endFrameWork():
     enemy.enemyMovement(player, enemySurface)
     enemy.drawMovement(player, enemySurface)
     enemySurface.draw()
+    window.updateWindow()
     window.updateFrameWork()
 
 
 pygame.quit()
     
+

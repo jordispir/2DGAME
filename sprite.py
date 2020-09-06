@@ -1,11 +1,13 @@
 import pygame
 import random
 import time
+import threading
 
 xWindow, yWindow = 1280, 720 
 window = pygame.display.set_mode((xWindow, yWindow)) #WINDOW MUST GO OUT!
 
 bullets = []
+        
 
 class Window:
     def __init__(self):
@@ -45,7 +47,7 @@ class Player:
         self.startMovement = False
         
 
-    def playerMovement(self):
+    def playerMovement(self, enemy):
         key = pygame.key.get_pressed()
 
         if self.y == (yWindow - self.height):  #can't move until touching the ground / -2 (yWindow- self.height never will be = )
@@ -94,7 +96,6 @@ class Player:
         #print ("Y personaje = " + str(self.y))
 
     def draw(self):
-        
         if self.walkCount + 1 >= 27:
             self.walkCount = 0
 
@@ -134,7 +135,8 @@ class Projectile:
 
         self.x += self.velocity
         self.draw()
-            
+
+
 class Enemy:
     def __init__(self, enemySurface):
         self.width, self.height = 64, 64
@@ -166,6 +168,9 @@ class Enemy:
         #print (self.starterX, self.starterY)
 
     def enemyDrop(self, player, enemySurface):
+        #time.sleep(0.05)
+        #print ("self.y + 32 = " + str(self.y + 32))
+
         if self.starterX == enemySurface.DerechaX + 100:
             if self.x < (enemySurface.DerechaX - enemySurface.width + self.width) - 20: #Out of the surface
                 if self.y >= (yWindow - self.height): 
@@ -199,7 +204,7 @@ class Enemy:
                     self.x += self.mueveDerecha
 
         #print (self.startMovementEnemy)
-        print (self.x, self.y)
+            #print (self.x, self.y)
         #time.sleep(0.1)
 
     def enemyMovement(self, player, enemySurface):
@@ -246,7 +251,6 @@ class Enemy:
                 self.walkCount += 1
         else:
             window.blit(self.walkLeft[0], (self.x, self.y))
-            
         
 
 class EnemySurface:
@@ -259,6 +263,7 @@ class EnemySurface:
     def draw(self):
         pygame.draw.rect(window, self.color, (self.DerechaX, self.DerechaY, self.width, self.height))
         pygame.draw.rect(window, self.color, (self.IzquierdaX, self.IzquierdaY, self.width, self.height))
+
 
     #TODO Make a phisics motor for Enemy. OK 50%
     #TODO Encontrar optimitzación para el error. (línea 156) | con  >=   OK! (se pasará por un mínimo)

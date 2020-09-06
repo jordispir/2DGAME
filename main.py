@@ -12,7 +12,7 @@ enemy = sprite.Enemy(enemySurface)
 
 while not window.endFrameWork():
     window.startFrameWork()
-    player.playerMovement()
+    player.playerMovement(enemy)
     player.draw()
     enemy.enemyDrop(player, enemySurface)
     enemy.enemyMovement(player, enemySurface)

@@ -1,6 +1,6 @@
 import pygame
 import sprite
-import windowManager
+import windowManager 
 
 pygame.init()
 
@@ -9,12 +9,13 @@ player = sprite.Player()
 enemySurface = sprite.EnemySurface()
 enemy = sprite.Enemy(enemySurface)
 
-
 while not window.endFrameWork():
     window.startFrameWork()
     windowManager.updateWindow()
     player.playerMovement(enemy)
-    player.draw()
+    player.drawPlayer()
+    player.drawSpacheShip()
+    player.spacheShipMovement()
     enemy.enemyDrop(player, enemySurface)
     enemy.enemyMovement(player, enemySurface)
     enemy.drawMovement(player, enemySurface)

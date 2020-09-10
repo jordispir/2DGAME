@@ -3,6 +3,7 @@ import windowManager
 import random
 import time
 import threading
+import tools
 
 window = windowManager.window
 xWindow, yWindow = windowManager.xWindow, windowManager.yWindow
@@ -11,30 +12,45 @@ bullets = []
         
 
 class Player:
-    def __init__(self): 
+    def __init__(self):
         self.window = window
         self.width, self.height = 64, 64
-        self.x, self.y = (xWindow/2 - self.width/2), 0 
-        self.dropVelocity = 8
-        self.velocidad = 6
+        self.dropVelocity = 6
+        self.velocidad = 8
+        self.spacheShipVelocity = 4
         self.jumpCount = 10
         self.walkCount = 0
         self.walkRight = [pygame.image.load('personaje/R1.png'), pygame.image.load('personaje/R2.png'), pygame.image.load('personaje/R3.png'), pygame.image.load('personaje/R4.png'), pygame.image.load('personaje/R5.png'), pygame.image.load('personaje/R6.png'), pygame.image.load('personaje/R7.png'), pygame.image.load('personaje/R8.png'), pygame.image.load('personaje/R9.png')]
         self.walkLeft = [pygame.image.load('personaje/L1.png'), pygame.image.load('personaje/L2.png'), pygame.image.load('personaje/L3.png'), pygame.image.load('personaje/L4.png'), pygame.image.load('personaje/L5.png'), pygame.image.load('personaje/L6.png'), pygame.image.load('personaje/L7.png'), pygame.image.load('personaje/L8.png'), pygame.image.load('personaje/L9.png')]
+        self.spaceShipImage = pygame.image.load("objetos/spacheShip.png")
+        self.spaceShipLight = pygame.image.load("objetos/lighting.png")
+        self.xSpacheShip, self.ySpacheShip = -self.spaceShipImage.get_width() , 100
+        self.x, self.y = 51 + self.spaceShipImage.get_width() / 2 - 50, 175
         self.standing = True
         self.left = False
         self.right = False
         self.Jump = False
         self.startMovement = False
+        self.startProjectingImage = False
         
+    def spacheShipMovement(self):
+
+        if self.xSpacheShip >= 50:
+            self.startProjectingImage = True
+        elif not(self.startProjectingImage):
+            self.xSpacheShip += self.spacheShipVelocity
+
+
+        #print (self.xSpacheShip)
+        #print (self.y)
 
     def playerMovement(self, enemy):
         key = pygame.key.get_pressed()
 
-        if self.y == (yWindow - self.height):  #can't move until touching the ground / -2 (yWindow- self.height never will be = )
+        if self.y == (yWindow - self.height) - 1:  #can't move until touching the ground / -2 (yWindow- self.height never will be = )
             self.startMovement = True
 
-        elif self.startMovement == False:
+        elif self.startMovement == False and self.startProjectingImage:
             self.y += self.dropVelocity
             self.right = True
 
@@ -76,7 +92,7 @@ class Player:
         #print (self.walkRight[0].get_size())
         #print ("Y personaje = " + str(self.y))
 
-    def draw(self):
+    def drawPlayer(self):
         if self.walkCount + 1 >= 27:
             self.walkCount = 0
 
@@ -90,9 +106,12 @@ class Player:
         else:
             if self.right:
                 window.blit(self.walkRight[0], (self.x, self.y))
-            else:
-               window.blit(self.walkLeft[0], (self.x, self.y))
 
+    def drawSpacheShip(self):
+        window.blit(self.spaceShipImage, (self.xSpacheShip, self.ySpacheShip))
+
+        if self.startProjectingImage:
+            window.blit(self.spaceShipLight, (self.xSpacheShip/2, self.ySpacheShip + self.spaceShipImage.get_height() - 20 ))
 
 class Projectile:
     def __init__(self, x, y, color, size, velocity):

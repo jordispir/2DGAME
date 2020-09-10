@@ -13,6 +13,7 @@ bullets = []
 
 class Player:
     def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
         self.window = window
         self.width, self.height = 64, 64
         self.dropVelocity = 6
@@ -32,23 +33,33 @@ class Player:
         self.Jump = False
         self.startMovement = False
         self.startProjectingImage = False
+        self.touchingSurface = False
+        self.fall = False
         
     def spacheShipMovement(self):
-
         if self.xSpacheShip >= 50:
             self.startProjectingImage = True
         elif not(self.startProjectingImage):
             self.xSpacheShip += self.spacheShipVelocity
 
+    def playerCollision(self, playerSurface):
+        if self.y > playerSurface.y+playerSurface.RockSurface.get_height():
+            if playerSurface.x < self.x < (playerSurface.x + playerSurface.RockSurface.get_width()):
+                self.y = playerSurface.y
+            else:
+                self.y += self.dropVelocity
+        else:
+            self.y += self.dropVelocity
 
-        #print (self.xSpacheShip)
-        #print (self.y)
 
     def playerMovement(self, enemy):
         key = pygame.key.get_pressed()
 
-        if self.y == (yWindow - self.height) - 1:  #can't move until touching the ground / -2 (yWindow- self.height never will be = )
+        if self.y >= (yWindow - self.height):  #can't move until touching the ground / -2 (yWindow- self.height never will be = )
             self.startMovement = True
+            self.fall = False
+            #print (self.startProjectingImage)
+            self.startProjectingImage = False
 
         elif self.startMovement == False and self.startProjectingImage:
             self.y += self.dropVelocity
@@ -106,15 +117,21 @@ class Player:
         else:
             if self.right:
                 window.blit(self.walkRight[0], (self.x, self.y))
+            elif self.left:
+                window.blit(self.walkLeft[0], (self.x, self.y))
 
     def drawSpacheShip(self):
         window.blit(self.spaceShipImage, (self.xSpacheShip, self.ySpacheShip))
-
-        if self.startProjectingImage:
+        if self.startMovement:
+            if not(self.xSpacheShip >= xWindow):
+                self.xSpacheShip += 10
+        
+        elif self.startProjectingImage and not(self.startMovement):
             window.blit(self.spaceShipLight, (self.xSpacheShip/2, self.ySpacheShip + self.spaceShipImage.get_height() - 20 ))
 
 class Projectile:
     def __init__(self, x, y, color, size, velocity):
+        pygame.sprite.Sprite.__init__(self)
         self.window = window
         self.x = x
         self.y = y
@@ -139,6 +156,7 @@ class Projectile:
 
 class Enemy:
     def __init__(self, enemySurface):
+        pygame.sprite.Sprite.__init__(self)
         self.width, self.height = 64, 64
         self.starterX = random.choice((enemySurface.DerechaX, enemySurface.IzquierdaX)) 
         self.mueveIzquierda, self.mueveDerecha = -4, 4 
@@ -335,6 +353,7 @@ class Enemy:
 
 class EnemySurface:
     def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
         self.DerechaX, self.DerechaY = xWindow - 100, random.randrange(100, 500)
         self.IzquierdaX, self.IzquierdaY = 0, random.randrange(100, 500)
         self.width, self.height = 100, 5
@@ -344,6 +363,14 @@ class EnemySurface:
         pygame.draw.rect(window, self.color, (self.DerechaX, self.DerechaY, self.width, self.height))
         pygame.draw.rect(window, self.color, (self.IzquierdaX, self.IzquierdaY, self.width, self.height))
 
+class PlayerSurface:
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.RockSurface = pygame.image.load("objetos/rockSurface.png")
+        self.x, self.y = 100, yWindow - self.RockSurface.get_height()
+
+    def draw(self): 
+        window.blit(self.RockSurface, (self.x, self.y))
 
     #TODO Make a phisics motor for Enemy. OK 50%
     #TODO Encontrar optimitzación para el error. (línea 156) | con  >=   OK! (se pasará por un mínimo)

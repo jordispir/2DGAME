@@ -8,7 +8,7 @@ monitorSize = pygame.display.Info()
 xWindow, yWindow = 1200, 720
 
 xWindowMaximized, yWindowMaximized = monitorSize.current_w, monitorSize.current_h
-
+print (monitorSize.current_w, monitorSize.current_h)
 
 window = pygame.display.set_mode((xWindow, yWindow), pygame.RESIZABLE)
 fullscreen = False

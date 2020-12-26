@@ -5,24 +5,31 @@ import windowManager
 pygame.init()
 
 window =  windowManager.Window()
-playerSurface = sprite.PlayerSurface()
-player = sprite.Player()
+spaceShip = sprite.spaceShip()
+player = sprite.Player(spaceShip)
 enemySurface = sprite.EnemySurface()
 enemy = sprite.Enemy(enemySurface)
 
 while not window.endFrameWork():
     window.startFrameWork()
     windowManager.updateWindow()
-    player.playerMovement(enemy)
-    player.playerCollision(playerSurface)
+
+    #space
+    spaceShip.spaceIntro()
+    spaceShip.draw()
+
+    #player
+    player.playerMovement(enemy, spaceShip)
+    player.playerDrop(spaceShip)
+    player.collision()
     player.drawPlayer()
-    playerSurface.draw()
-    player.drawSpacheShip()
-    player.spacheShipMovement()
-    enemy.enemyDrop(player, enemySurface)
-    enemy.enemyMovement(player, enemySurface)
-    enemy.drawMovement(player, enemySurface)
+
+    #enemy
+    enemy.enemyDrop(spaceShip, enemySurface)
+    enemy.enemyMovement(spaceShip, enemySurface)
+    enemy.drawMovement(spaceShip, enemySurface)
     enemySurface.draw()
+    
     window.updateFrameWork()
 
 

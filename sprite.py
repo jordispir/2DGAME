@@ -9,75 +9,103 @@ window = windowManager.window
 xWindow, yWindow = windowManager.xWindow, windowManager.yWindow
 
 bullets = []
-        
+enemies = pygame.sprite.Group()
+players = pygame.sprite.Group()
+
+class spaceShip:
+    def __init__(self):
+        self.spaceShipImage = pygame.image.load("objetos/spacheShip.png")
+        self.spaceShipHeight = self.spaceShipImage.get_height()
+        self.spaceShipWidth = self.spaceShipImage.get_width()
+        self.spaceShipLight = pygame.image.load("objetos/lighting.png")
+        self.xSpaceShip, self.ySpaceShip = -self.spaceShipImage.get_width() , 100
+        self.spaceShipVelocity = 4
+        self.intro = True
+        self.startMovement = False
+        self.playerPhy = False
+        self.onGround = False
+
+    def spaceIntro(self):
+        if self.intro:
+            if self.playerPhy:
+                if self.onGround or self.startMovement: #fin del condicional.
+                    self.startMovement = True
+                    if self.xSpaceShip < xWindow:
+                        self.xSpaceShip += 10
+                    else:
+                        self.intro = False
+                else:
+                    window.blit(self.spaceShipLight, (self.xSpaceShip/2, self.ySpaceShip + (self.spaceShipHeight - 20 )))
+            else:
+                if self.xSpaceShip > 50:
+                    self.playerPhy = True
+                else:
+                    self.xSpaceShip += self.spaceShipVelocity
+
+    def draw(self):
+        window.blit(self.spaceShipImage, (self.xSpaceShip, self.ySpaceShip))
 
 class Player:
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
+    def __init__(self, space):
         self.window = window
         self.width, self.height = 64, 64
-        self.dropVelocity = 6
-        self.velocidad = 8
-        self.spacheShipVelocity = 4
-        self.jumpCount = 10
-        self.walkCount = 0
+        self.x, self.y = 51 + (space.spaceShipWidth/ 2) - 50, 175
         self.walkRight = [pygame.image.load('personaje/R1.png'), pygame.image.load('personaje/R2.png'), pygame.image.load('personaje/R3.png'), pygame.image.load('personaje/R4.png'), pygame.image.load('personaje/R5.png'), pygame.image.load('personaje/R6.png'), pygame.image.load('personaje/R7.png'), pygame.image.load('personaje/R8.png'), pygame.image.load('personaje/R9.png')]
         self.walkLeft = [pygame.image.load('personaje/L1.png'), pygame.image.load('personaje/L2.png'), pygame.image.load('personaje/L3.png'), pygame.image.load('personaje/L4.png'), pygame.image.load('personaje/L5.png'), pygame.image.load('personaje/L6.png'), pygame.image.load('personaje/L7.png'), pygame.image.load('personaje/L8.png'), pygame.image.load('personaje/L9.png')]
-        self.spaceShipImage = pygame.image.load("objetos/spacheShip.png")
-        self.spaceShipLight = pygame.image.load("objetos/lighting.png")
-        self.xSpacheShip, self.ySpacheShip = -self.spaceShipImage.get_width() , 100
-        self.x, self.y = 51 + self.spaceShipImage.get_width() / 2 - 50, 175
+
+        self.player = pygame.sprite.Sprite()
+
+        self.playerImage = self.walkRight[0]
+        self.playerHeight = self.playerImage.get_height()
+        self.player.rect = self.playerImage.get_rect() 
+        self.player.rect.x = self.x
+        self.player.rect.y = self.y
+
+        players.add(self.player)
+
+        self.walkCount = 0
+        self.dropVelocity = 8
+        self.velocidad = 8
+        self.jumpCount = 10
         self.standing = True
         self.left = False
         self.right = False
         self.Jump = False
-        self.startMovement = False
-        self.startProjectingImage = False
-        self.touchingSurface = False
-        self.fall = False
-        
-    def spacheShipMovement(self):
-        if self.xSpacheShip >= 50:
-            self.startProjectingImage = True
-        elif not(self.startProjectingImage):
-            self.xSpacheShip += self.spacheShipVelocity
 
-    def playerCollision(self, playerSurface):
-        if self.y > playerSurface.y+playerSurface.RockSurface.get_height():
-            if playerSurface.x < self.x < (playerSurface.x + playerSurface.RockSurface.get_width()):
-                self.y = playerSurface.y
-            else:
+    def playerDrop(self, space):
+        if space.playerPhy:
+            if self.y < yWindow - self.playerHeight:
+                self.right = True
                 self.y += self.dropVelocity
-        else:
-            self.y += self.dropVelocity
+            
+            else:
+                space.startMovement = True
+                self.y = yWindow - self.playerHeight
 
+            if self.y == yWindow - self.playerHeight:
+                space.onGround = True
 
-    def playerMovement(self, enemy):
+        self.player.rect.x = self.x
+        self.player.rect.y = self.y
+
+    def playerMovement(self, enemy, space):
         key = pygame.key.get_pressed()
 
-        if self.y >= (yWindow - self.height):  #can't move until touching the ground / -2 (yWindow- self.height never will be = )
-            self.startMovement = True
-            self.fall = False
-            #print (self.startProjectingImage)
-            self.startProjectingImage = False
+        if key[pygame.K_SPACE] and space.startMovement: 
+            if len(bullets) < 1:
+                pass
 
-        elif self.startMovement == False and self.startProjectingImage:
-            self.y += self.dropVelocity
-            self.right = True
-
-        if key[pygame.K_SPACE] and self.startMovement: 
-            bullets.append(Projectile(self.x + self.width//2, self.y + self.height//2, (0, 0, 0), 5, (8 if self.right else -8)))
-                    
         for bullet in bullets:
             bullet.movement()
+            bullet.draw()
 
-        if key[pygame.K_LEFT] and self.x >= 0 and self.startMovement:
+        if key[pygame.K_LEFT] and self.x >= 0 and space.startMovement:
             self.x -= self.velocidad
             self.left = True
             self.right = False
             self.standing = False
 
-        elif key[pygame.K_RIGHT] and self.x <= (xWindow - self.width)  and self.startMovement:
+        elif key[pygame.K_RIGHT] and self.x <= (xWindow - self.width)  and space.startMovement:
             self.x += self.velocidad
             self.left = False
             self.right = True
@@ -87,21 +115,31 @@ class Player:
             self.standing = True
             self.walkCount = 0
 
-        if self.Jump == False:
-            if key[pygame.K_UP]:
+        if not self.Jump and key[pygame.K_UP] and space.startMovement:
+            if space.onGround:
                 self.Jump = True
-        else:
-            if self.jumpCount >= -10 and self.startMovement:
                 self.y -= (self.jumpCount * abs(self.jumpCount)) * 0.5
                 self.jumpCount -= 1
-                
+                space.onGround = False
+
+        elif self.Jump:
+            if not space.onGround:
+                self.y -= (self.jumpCount * abs(self.jumpCount)) * 0.5
+                self.jumpCount -= 1
             else: # This will execute if our jump is finished
                 self.jumpCount = 10
                 self.Jump = False
+        
+        #print (space.onGround)
 
+        self.player.rect.x = self.x
+        self.player.rect.y = self.y
 
-        #print (self.walkRight[0].get_size())
-        #print ("Y personaje = " + str(self.y))
+        #print (self.player.rect.x, self.player.rect.y, self.x, self.y)
+
+    def collision(self):
+        if (pygame.sprite.spritecollideany(self.player, enemies)):
+            print ("collision")
 
     def drawPlayer(self):
         if self.walkCount + 1 >= 27:
@@ -120,43 +158,12 @@ class Player:
             elif self.left:
                 window.blit(self.walkLeft[0], (self.x, self.y))
 
-    def drawSpacheShip(self):
-        window.blit(self.spaceShipImage, (self.xSpacheShip, self.ySpacheShip))
-        if self.startMovement:
-            if not(self.xSpacheShip >= xWindow):
-                self.xSpacheShip += 10
-        
-        elif self.startProjectingImage and not(self.startMovement):
-            window.blit(self.spaceShipLight, (self.xSpacheShip/2, self.ySpacheShip + self.spaceShipImage.get_height() - 20 ))
-
 class Projectile:
-    def __init__(self, x, y, color, size, velocity):
-        pygame.sprite.Sprite.__init__(self)
-        self.window = window
-        self.x = x
-        self.y = y
-        self.xInicial = self.x
-        self.yInicial = self.y
-        self.color = color
-        self.size = size 
-        self.velocity = velocity
-        self.shoot = False
-
-    def draw(self):
-        pygame.draw.circle(window, (self.color), ( int(self.x), int(self.y) ), self.size)  
-
-    def movement(self):
-        for bullet in bullets:
-            if self.x == xWindow and self.x == 0: 
-                bullets.pop(bullets.index(bullet)) #Delete bullet image
-
-        self.x += self.velocity
-        self.draw()
-
+    def __init__(self):
+        pass
 
 class Enemy:
     def __init__(self, enemySurface):
-        pygame.sprite.Sprite.__init__(self)
         self.width, self.height = 64, 64
         self.starterX = random.choice((enemySurface.DerechaX, enemySurface.IzquierdaX)) 
         self.mueveIzquierda, self.mueveDerecha = -4, 4 
@@ -185,21 +192,34 @@ class Enemy:
         self.x, self.y = self.starterX, self.starterY
         self.x2, self.y2 = self.starterX2, self.starterY2
 
-        self.walkCountE1 = 0
-        self.walkCountE2 = 0
         self.walkLeft = [pygame.image.load("enemy/L1E.png"), pygame.image.load("enemy/L2E.png"), pygame.image.load("enemy/L3E.png"), pygame.image.load("enemy/L4E.png"), pygame.image.load("enemy/L5E.png"), pygame.image.load("enemy/L6E.png"), pygame.image.load("enemy/L7E.png"), pygame.image.load("enemy/L8E.png"), pygame.image.load("enemy/L9E.png"), pygame.image.load("enemy/L10E.png"), pygame.image.load("enemy/L11E.png")]
         self.walkRight = [pygame.image.load("enemy/R1E.png"), pygame.image.load("enemy/R2E.png"), pygame.image.load("enemy/R3E.png"), pygame.image.load("enemy/R4E.png"), pygame.image.load("enemy/R5E.png"), pygame.image.load("enemy/R6E.png"), pygame.image.load("enemy/R7E.png"), pygame.image.load("enemy/R8E.png"), pygame.image.load("enemy/R9E.png"), pygame.image.load("enemy/R10E.png"), pygame.image.load("enemy/R11E.png")]
+
+        self.enemyLeft = pygame.sprite.Sprite()
+        self.enemyImage = self.walkLeft[0]
+        self.enemyLeft.rect = self.enemyImage.get_rect()
+        self.enemyLeft.rect.x = self.x
+        self.enemyLeft.rect.y = self.y
+
+        self.enemyRight = pygame.sprite.Sprite()
+        self.enemyRightImage = self.walkRight[0]
+        self.enemyRight.rect = self.enemyRightImage.get_rect()
+        self.enemyRight.rect.x = self.x2
+        self.enemyRight.rect.y = self.y2
+        
+
+        enemies.add(self.enemyLeft)
+        enemies.add(self.enemyRight)
+
         self.dropVelocity = 8
         self.left, self.right = False, False
         self.left2, self.right2 = False, False
         self.startMovementE1, self.startMovementE2 = False, False
         self.endMovementE1, self.endMovementE2 = False, False
-        
-        #print (self.starterX, self.starterY)
+        self.walkCountE1 = 0
+        self.walkCountE2 = 0
 
-    def enemyDrop(self, player, enemySurface):
-        #print ("self.y + 32 = " + str(self.y + 32))
-
+    def enemyDrop(self, space, enemySurface):
         if self.starterX == enemySurface.DerechaX + 100:
             if self.x < (enemySurface.DerechaX - enemySurface.width + self.width) - 20: #Out of the surface
                 if self.y >= (yWindow - self.height): 
@@ -212,8 +232,8 @@ class Enemy:
                     self.drawPlayerFalling(enemySurface)
 
             else:
-                if player.startMovement and not (self.endMovementE1): #mientras endMovement siga siendo False el enemigo se moverá hacia la izquierda, 
-                    self.left = True                                #cuando endMovement sea True no se sumará el mueveIzquierda y tampoco impedirá avanzar en el enemyMovement.
+                if space.startMovement and not (self.endMovementE1): #mientras endMovement siga siendo False el enemigo se moverá hacia la izquierda, 
+                    self.left = True                                  #cuando endMovement sea True no se sumará el mueveIzquierda y tampoco impedirá avanzar en el enemyMovement.
                     self.x += self.mueveIzquierda   
         
         elif self.starterX == enemySurface.IzquierdaX - 100:
@@ -228,7 +248,7 @@ class Enemy:
                     self.drawPlayerFalling(enemySurface)
 
             else:
-                if player.startMovement and not (self.endMovementE1): 
+                if space.startMovement and not (self.endMovementE1): 
                     self.right = True                         
                     self.x += self.mueveDerecha
 
@@ -244,7 +264,7 @@ class Enemy:
                     self.drawPlayerFalling(enemySurface)
 
             else:
-                if player.startMovement and not (self.endMovementE2): 
+                if space.startMovement and not (self.endMovementE2): 
                     self.left2 = True
                     self.x2 += self.mueveIzquierda   
         
@@ -260,18 +280,12 @@ class Enemy:
                     self.drawPlayerFalling(enemySurface)
 
             else:
-                if player.startMovement and not (self.endMovementE2): 
+                if space.startMovement and not (self.endMovementE2): 
                     self.right2 = True                         
                     self.x2 += self.mueveDerecha
 
-                
-        #time.sleep(0.1)
-        #print (self.x, self.y)
-        #print ("self.left = " + str(self.left), "self.right = " + str(self.right))
-        #print ("self.left2 = " + str(self.left2), "self.right2 = " + str(self.right2))
-
-    def enemyMovement(self, player, enemySurface):
-        if self.startMovementE1 and player.startMovement:
+    def enemyMovement(self, space, enemySurface):
+        if self.startMovementE1 and space.startMovement:
             if self.incrementoE1 == self.mueveDerecha:
                 self.right, self.left = True, False
 
@@ -290,7 +304,7 @@ class Enemy:
                 else:
                     self.incrementoE1 = self.mueveDerecha
 
-        if self.startMovementE2 and player.startMovement:
+        if self.startMovementE2 and space.startMovement:
             if self.incrementoE2 == self.mueveDerecha:
                 self.right2, self.left2 = True, False
 
@@ -308,10 +322,12 @@ class Enemy:
                 
                 else:
                     self.incrementoE2 = self.mueveDerecha
+        
+        self.enemyLeft.rect.x = self.x
+        self.enemyLeft.rect.y = self.y
 
-        #print (self.x)
-        #print ("xWindow - self.width = " + str(xWindow- self.width))
-        #print (self.mueveIzquierda, self.mueveDerecha)
+        self.enemyRight.rect.x = self.x2
+        self.enemyRight.rect.y = self.y2
 
     def drawPlayerFalling(self, enemySurface):
             if self.starterX == enemySurface.DerechaX + 100 and not(self.startMovementE1):
@@ -323,8 +339,8 @@ class Enemy:
             elif self.starterX2 == enemySurface.IzquierdaX - 100 and not(self.startMovementE2):
                 window.blit(self.walkRight[6], (self.x2, self.y2))
 
-    def drawMovement(self, player, enemySurface):
-        if player.startMovement:
+    def drawMovement(self, space, enemySurface):
+        if space.startMovement:
             if self.walkCountE1 + 1 >= 27:
                 self.walkCountE1 = 0
 
@@ -349,8 +365,6 @@ class Enemy:
         else:
             window.blit(self.walkLeft[0], (self.x, self.y))
 
-        
-
 class EnemySurface:
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -362,21 +376,3 @@ class EnemySurface:
     def draw(self):
         pygame.draw.rect(window, self.color, (self.DerechaX, self.DerechaY, self.width, self.height))
         pygame.draw.rect(window, self.color, (self.IzquierdaX, self.IzquierdaY, self.width, self.height))
-
-class PlayerSurface:
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.RockSurface = pygame.image.load("objetos/rockSurface.png")
-        self.x, self.y = 100, yWindow - self.RockSurface.get_height()
-
-    def draw(self): 
-        window.blit(self.RockSurface, (self.x, self.y))
-
-    #TODO Make a phisics motor for Enemy. OK 50%
-    #TODO Encontrar optimitzación para el error. (línea 156) | con  >=   OK! (se pasará por un mínimo)
-    #TODO Crear varios personajes que aparezcan en diferentes posiciones. 50%
-    
-    #TODO Blit de imagen superpuesto mientras en otro enemigo no toque el suelo.
-
-    #get_size() -> image.get_size() -> print variable
-    #Solo se queda con 400 en la Y. OK -> La altura y anchura del personaje es de 64 x 64, se debe convertir con pygame.transform.scale
